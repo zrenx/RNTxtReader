@@ -1,3 +1,10 @@
 rootProject.name = 'RNTxtReader'
 
 include ':app'
+
+include ':react-native-fs'
+project(':react-native-fs').projectDir = new File(settingsDir, '../node_modules/react-native-fs/android')
+include ':react-native-document-picker'
+project(':react-native-document-picker').projectDir = new File(settingsDir, '../node_modules/react-native-document-picker/android')
+include ':react-native-file-picker'
+project(':react-native-file-picker').projectDir = new File(settingsDir, '../node_modules/react-native-file-picker/android')
