@@ -69,7 +69,6 @@ class Dialog extends Component {
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                   }}>
               <View style={{
-                    flex: 1,
                     padding: 10,
                     backgroundColor: '#fff',
                     elevation: 4,
