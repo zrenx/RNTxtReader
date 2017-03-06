@@ -71,7 +71,8 @@ export default class DashBoard extends Component {
         <View style={styles.setting}>
           <Image source={require('./img/library.png')} style={styles.settingIcon} />
           <Text style={styles.settingText} onPress={() => {
-            this.props.navigate({type: 'push', route: {key: 'library', title: 'LIBRARY'}});
+            //this.props.navigate({type: 'push', route: {key: 'library', title: 'LIBRARY'}});
+            this.props.navigation.navigate("Library");
           }}>
             Library  ( {this.state.book_count} )
           </Text>

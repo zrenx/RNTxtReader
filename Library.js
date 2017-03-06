@@ -15,22 +15,25 @@ import {
   ActivityIndicator,
   PixelRatio,
   Linking,
-  NavigationExperimental,
   TouchableWithoutFeedback,
   TextInput,
   Image,
 } from 'react-native';
 import Data from './data';
-import ZrxHeader from './ZrxHeader';
 import ZrxDialog from './ZrxDialog';
-
-const {
-  Header: NavigationHeader,
-} = NavigationExperimental;
 
 import {SwipeRow} from 'react-native-swipe-list-view';
 
 export default class Library extends Component {
+
+  static navigationOptions = {
+    title: 'Library',
+    header: {
+      titleStyle: {
+        alignItems: 'center',
+      }
+    }
+  }
 
   constructor(props) {
     super(props);
@@ -51,7 +54,7 @@ export default class Library extends Component {
   _updateNovels() {
     Data.getNovels().then(novels => {
       if (novels) {
-        console.log("novels:" + JSON.stringify(novels));
+        //console.log("novels:" + JSON.stringify(novels));
         this.setState({
           novels: novels,
           loading: false,
@@ -91,7 +94,7 @@ export default class Library extends Component {
   _renderNovels() {
     let novelViews = [];
     this.state.novels.map((novel,i) => {
-      console.log('map['+i+']: ' + JSON.stringify(novel));
+      //console.log('map['+i+']: ' + JSON.stringify(novel));
       novelViews.push(
         <SwipeRow
           key={novel.key}
@@ -105,12 +108,25 @@ export default class Library extends Component {
             </TouchableWithoutFeedback>
           </View>
           <View style={styles.visibleStyle}>
-            <Text onLongPress={() => {
-              this.setState({editNovel: novel});
-              setTimeout(() => {
-                this.refs.input.focus();
-              }, 10);
-            }}>{novel.name}</Text>
+            <Text
+              onLongPress={() => {
+                this.setState({editNovel: novel});
+                setTimeout(() => {
+                  this.refs.input.focus();
+                }, 10);
+              }}
+              onPress={() => {
+                Data.setCurNovel(novel.key).then(() => {
+                  console.log("done setCurNovel: " + novel.key);
+                  return Data.removeCurChapter();
+                }).then(() => {
+                  console.log("done setCurChapter");
+                  this.props.navigation.goBack();
+                }).catch(e => {
+                  console.e(e);
+                })
+
+              }}>{novel.name}</Text>
           </View>
         </SwipeRow>
         );
@@ -122,10 +138,6 @@ export default class Library extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.body}>
-        <ZrxHeader
-          {...this.props}
-          isCross={true}
-        />
 
         <View style={styles.body}>
           {this._renderNovels()}

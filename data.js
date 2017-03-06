@@ -69,33 +69,35 @@ export default class Data {
     console.log('filename: ' + filenames);
     let novel = filenames.length > 1 ? filenames[filenames.length - 1] : path;
     return RNFS.readFile(path)
-        .then((content) => {
+        .then(async(content) => {
           console.log("file read");
           let novelKey = "key_"+new Date().getTime();
           Data.saveNovel(novelKey, novel);
 
-          let lines = content.split(/(\r)?\n/);
+          let lines = content.split(/\r?\n/);
           console.log("lines: " + lines.length);
           let idx = 0;
           let text = '';
           let title = '简介';
           let chapters = [];
           chapters.push(title);
+          //lines.forEach((line) => {
           for (let line of lines) {
             //console.log(lines[i]);
-            if (line.match("^\s*第.{1,4}章\s*$")) {
+            if (line.match("^\s*第.{1,4}章.*$")) {
               console.log("chapter: " + line);
               title = line;
               chapters.push(title);
               //this.setValue("key_"+filename+"_"+title, text);
-              Data.saveChapter(novelKey, idx, text);
+              await Data.saveChapter(novelKey, idx, text);
               idx ++;
               text = '';
             }
             text = text + line + '\n';
           }
+          await Data.saveChapter(novelKey, idx, text);
           //this.setObjects("key_"+filename+"_chapters", chapters);
-          Data.saveChapters(novelKey, chapters);
+          await Data.saveChapters(novelKey, chapters);
           return novel;
         });
   }
@@ -107,15 +109,12 @@ export default class Data {
           return key.match(/key_\d{13}$/);
         });
       }).then(novelKeys => {
-        console.log(JSON.stringify(novelKeys));
         return AsyncStorage.multiGet(novelKeys).then(result => {
-          console.log(JSON.stringify(result));
           let novels = [];
           result.map(novel => {
             novels.push({key: novel[0], name: novel[1]});
           })
           return novels;
-          //novels.push({key: key, name: result});
         });
     });
   }
@@ -136,7 +135,7 @@ export default class Data {
   }
 
   static getChapters(novelKey) {
-    return AsyncStorage.getItem(novelKey).then(result => {
+    return AsyncStorage.getItem(novelKey+"_chapters").then(result => {
       return JSON.parse(result);
     });
   }
@@ -146,7 +145,12 @@ export default class Data {
   }
 
   static getChapter(novelKey, idx) {
+    console.log("getChapter: " + (novelKey +"_"+idx));
     return AsyncStorage.getItem(novelKey+"_"+idx);
+  }
+
+  static getChapter(chapterKey) {
+    return AsyncStorage.getItem(chapterKey);
   }
 
   static saveChapter(novelKey, idx, content) {
@@ -166,5 +170,9 @@ export default class Data {
 
   static setCurChapter(chapter) {
     return AsyncStorage.setItem(KEY_CUR_CHAPTER, chapter);
+  }
+
+  static removeCurChapter() {
+    return AsyncStorage.removeItem(KEY_CUR_CHAPTER);
   }
 }

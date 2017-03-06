@@ -19,12 +19,12 @@ import {
   TouchableWithoutFeedback,
   TouchableOpacity,
   TouchableHighlight,
+  FlatList,
 } from 'react-native';
 import { DocumentPickerUtil, DocumentPicker } from 'react-native-document-picker';
 import RNFS from 'react-native-fs';
 import FilePickerManager from 'react-native-file-picker';
 import Drawer from 'react-native-drawer';
-import DrawerLayout from 'react-native-drawer-layout';
 
 import ZrxDialog from './ZrxDialog';
 import ZrxPgListView from './ZrxPgListView';
@@ -32,15 +32,34 @@ import MoreTouchable from './MoreTouchable';
 import DashBoard from './DashBoard';
 import Data from './data';
 
-let KEY_NOVELS = "key_novels";
-let KEY_CUR_NOVEL = "key_cur_novel";
-let KEY_CUR_CHAPTER = "key_cur_chapter";
-/**
- * key_{novel}_chapters: [novel_chapter_titles],
- * key_{novel}_{chapter_title} : [novel_chapter_text],
-**/
-
 export default class Reader extends Component {
+
+  static navigationOptions = {
+    title: 'RNTxtReader',
+    header: {visible: false},
+  }
+  /*
+    header: () => ({
+      visible: false,
+      style: {
+        backgroundColor: '#ccc',
+      },
+      titleStyle: {
+        backgroundColor: '#3cc',
+        alignSelf: 'center',
+      },
+      left: (
+        <TouchableWithoutFeedback
+          onPress={() => {
+            console.log("Drawer");
+            this.refs.drawer.open();
+        }}>
+          <Image style={{marginLeft: 5, width:40, height: 40}}
+            source={require('./img/nav.png')}/>
+        </TouchableWithoutFeedback>
+      ),
+    }),
+  */
 
   constructor(props) {
     super(props);
@@ -50,6 +69,7 @@ export default class Reader extends Component {
     let curContent = null;
     let chapters = null;
     this.titleAnim = new Animated.Value(0);
+    this.renderCb = null;
 
     this.state = {
       loading: true,
@@ -57,20 +77,35 @@ export default class Reader extends Component {
       content: '',
       showChapterList: false,
       showChapter: true,
+      drawerOpen: false,
     };
   }
 
   componentDidMount() {
+    console.log('Reader componentDidMount');
     //this.init();
-    Data.getNovels().then(novels => {
-      console.log(JSON.stringify(novels));
+    Data.getNovels().then(async (novels) => {
+      //console.log(JSON.stringify(novels));
       if (!novels || novels.length == 0) {
-         this.pickFile();
-      } else {
-        this.novels = novels;
+        this.setState({loading: false, drawerOpen: true})
 
-        let text = "";
-        this.setState({loading: false, content: text});
+      } else {
+        //let ck = null;
+        this.curChapter = await Data.getCurChapter();
+        this.curNovel = await Data.getCurNovel();
+        if (this.curNovel) {
+          this.chapters = await Data.getChapters(this.curNovel);
+          if (!this.curChapter) {
+            this.curChapter = this.chapters[0];
+          }
+
+          Data.getChapter(this.curChapter).then(text => {
+            this.setState({loading: false, content: text});
+          })
+
+        } else {
+          this.setState({loading: false, drawerOpen: true});
+        }
       }
     }).catch(error => {
       console.error(error);
@@ -83,9 +118,9 @@ export default class Reader extends Component {
       <Drawer
         ref='drawer'
         tapToClose={true}
-        open={true}
-        openDrawerOffset={0.3}
-        content={<DashBoard navigate={this.props.navigate} />}>
+        open={this.state.drawerOpen}
+        openDrawerOffset={0.2}
+        content={<DashBoard navigation={this.props.navigation} />}>
 
         <View style={{flex:1, backgroundColor: 'black'}}>
         <ScrollView ref="scrollView" indicatorStyle="white"
@@ -98,10 +133,10 @@ export default class Reader extends Component {
               onDoublePress={() => {
                 console.log("onDoublePress");
                 if (!this.state.showProgress) {
-                  this.renderCb = () => {
+                  //this.renderCb = () => {
                     this.showNextChapter();
-                  }
-                  this.setState({showProgress: true});
+                  //}
+                  //this.setState({showProgress: true});
                 }
               }}
               onSinglePress={() => {
@@ -110,10 +145,16 @@ export default class Reader extends Component {
               onLongPress={() => {
                 console.log("onLongPress");
                 this.setState({showChapterList: true});
-                for (let i = 0; i < this.chapters.length; i++) {
-                  if (this.chapters[i].href === this.curChapter.href) {
+                /*for (let i = 0; i < this.chapters.length; i++) {
+                  if (this.chapters[i].key === this.curChapter) {
                     this.refs.listView.goToItem(i);
                   }
+                }*/
+                if (this.chapters.indexOf(this.curChapter) != -1) {
+                  setTimeout(()=> {
+                    console.log("scrollToItem");
+                    this.refs.flatlist.scrollToItem(this.curChapter);
+                  }, 1);
                 }
               }}>
             <Text style={styles.content} >
@@ -159,17 +200,16 @@ export default class Reader extends Component {
               this.setState({showChapterList: false})
              }
             }>
-          <ZrxPgListView
-            ref="listView"
-            style={{flex: 1}}
-            pageSize={50}
-            postMount={async (pglv) => {
-              pglv.updateData(this._chapters2Rows());
-            }}
-            onSelect={(rowID) => {
-              console.log("selected: "+ rowID);
-              this.selectChapterIdx(rowID);
-              this.setState({showChapterList: false});
+          <FlatList
+            ref='flatlist'
+            data={this.chapters}
+            keyExtractor={(item, index) => index}
+            renderItem={({item, index}) => {
+              let bg = this.curChapter.split('_')[2] == index ? {backgroundColor: '#eef'}: null;
+              return (<Text style={[{height: 40, textAlignVertical: 'center'}, bg]} onPress={() => {
+                this.selectChapterIdx(index);
+                this.setState({showChapterList: false});
+              }}>{item}</Text>);
             }}
             />
         </ZrxDialog>
@@ -179,21 +219,31 @@ export default class Reader extends Component {
     );
   }
 
-  _chapters2Rows() {
-    console.log("chapters2Rows");
+  showNextChapter() {
+    //console.log("curChapter: " + this.curChapter);
+    let idx = parseInt(this.curChapter.split('_')[2]) + 1;
+    //console.log("idx: " + idx);
+    this.curChapter = this.curNovel + "_" + idx;
+    //console.log("curChapter: " + this.curChapter);
+    Data.setCurChapter(this.curChapter);
+    Data.getChapter(this.curChapter).then(text => {
+      //console.log("getChapter: " + text);
+      this.refs.scrollView.scrollTo({x:0, y:0, animated:false});
+      this.setState({title: this.chapters[idx], content: text});
+    });
+  }
 
-    let rows = [];
-    if (this.chapters) {
-      for (var i =0 ; i < this.chapters.length; i++) {
-        rows.push(this.chapters[i].title);
-      }
-    }
-    console.log("chapters2Rows " + rows.length);
+  selectChapterIdx(idx) {
+    this.curChapter = this.curNovel + "_" + idx;
+    //console.log("curChapter: " + this.curChapter);
+    Data.setCurChapter(this.curChapter);
+    Data.getChapter(this.curChapter).then(text => {
+      this.refs.scrollView.scrollTo({x:0, y:0, animated:false});
+      this.setState({title: this.chapters[idx], content: text});
+    });
+  }
 
-    return rows;
-  };
-
-    controlTitleAnim(offset) {
+  controlTitleAnim(offset) {
     if (offset == 0) {
       if (this.titleAnim._value == -50) {
         Animated.spring(this.titleAnim, {toValue: 0}).start();
@@ -231,17 +281,17 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   title_menu: {
-    height: 40,
-    width: 40,
+    height: 32,
+    width: 32,
     position: 'absolute',
     left: 5,
-    top: 5,
+    top: 9,
   },
   content: {
     borderWidth: 5,
     color: '#fff',
     fontSize: 16,
     margin: 5,
-    marginTop: 25,
+    marginTop: 50,
   },
 });
