@@ -27,10 +27,10 @@ import FilePickerManager from 'react-native-file-picker';
 import Drawer from 'react-native-drawer';
 
 import ZrxDialog from './ZrxDialog';
-import ZrxPgListView from './ZrxPgListView';
 import MoreTouchable from './MoreTouchable';
 import DashBoard from './DashBoard';
 import Data from './data';
+import { stringifyCyclic } from './Utils';
 
 export default class Reader extends Component {
 
@@ -38,28 +38,6 @@ export default class Reader extends Component {
     title: 'RNTxtReader',
     header: {visible: false},
   }
-  /*
-    header: () => ({
-      visible: false,
-      style: {
-        backgroundColor: '#ccc',
-      },
-      titleStyle: {
-        backgroundColor: '#3cc',
-        alignSelf: 'center',
-      },
-      left: (
-        <TouchableWithoutFeedback
-          onPress={() => {
-            console.log("Drawer");
-            this.refs.drawer.open();
-        }}>
-          <Image style={{marginLeft: 5, width:40, height: 40}}
-            source={require('./img/nav.png')}/>
-        </TouchableWithoutFeedback>
-      ),
-    }),
-  */
 
   constructor(props) {
     super(props);
@@ -150,12 +128,12 @@ export default class Reader extends Component {
                     this.refs.listView.goToItem(i);
                   }
                 }*/
-                if (this.chapters.indexOf(this.curChapter) != -1) {
-                  setTimeout(()=> {
-                    console.log("scrollToItem");
-                    this.refs.flatlist.scrollToItem(this.curChapter);
-                  }, 1);
-                }
+                setTimeout(()=> {
+                  let idx = parseInt(this.curChapter.split('_')[2]);
+                  //console.log("scrollToIndex: " + idx);
+                  //console.log(stringifyCyclic(this.refs));
+                  this.refs.flatlist.scrollToIndex({animated: true, index:idx});
+                }, 100);
               }}>
             <Text style={styles.content} >
               {this.state.content}
@@ -204,12 +182,17 @@ export default class Reader extends Component {
             ref='flatlist'
             data={this.chapters}
             keyExtractor={(item, index) => index}
+            getItemLayout={(item, index) => ({length: 40, offset: 40 * index, index})}
             renderItem={({item, index}) => {
               let bg = this.curChapter.split('_')[2] == index ? {backgroundColor: '#eef'}: null;
-              return (<Text style={[{height: 40, textAlignVertical: 'center'}, bg]} onPress={() => {
-                this.selectChapterIdx(index);
-                this.setState({showChapterList: false});
-              }}>{item}</Text>);
+              return (
+                <TouchableOpacity activeOpacity={0.5}  onPress={() => {
+                  this.selectChapterIdx(index);
+                  this.setState({showChapterList: false});
+                }}>
+                <Text style={[{height: 40, textAlignVertical: 'center'}, bg]}>{item}</Text>
+                </TouchableOpacity>
+                );
             }}
             />
         </ZrxDialog>

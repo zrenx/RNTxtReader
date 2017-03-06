@@ -182,23 +182,6 @@ export default class Library extends Component {
       </View>
     );
   }
-
-  logCyclic(obj) {
-    let seen = [];
-    return JSON.stringify(obj, function(key, val) {
-        //if (typeof key == 'string' && key.startsWith('_')) {
-        if (typeof key == 'string') {
-          return;
-        }
-        if (val != null && typeof val == "object") {
-          if (seen.indexOf(val) >= 0) {
-              return;
-          }
-          seen.push(val);
-        }
-        return val;
-  });
-}
 }
 
 const styles = StyleSheet.create({
