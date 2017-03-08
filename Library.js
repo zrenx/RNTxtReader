@@ -23,17 +23,21 @@ import Data from './data';
 import ZrxDialog from './ZrxDialog';
 
 import {SwipeRow} from 'react-native-swipe-list-view';
+import { NavigationActions, StackRouter } from 'react-navigation';
 
 export default class Library extends Component {
 
   static navigationOptions = {
-    title: 'Library',
+    title: 'LIBRARY',
     header: {
       titleStyle: {
-        alignItems: 'center',
+        alignSelf: 'center',
+        marginLeft: -40,
       }
     }
-  }
+  };
+
+  //static router = StackRouter;//(routes, config);
 
   constructor(props) {
     super(props);
@@ -117,13 +121,15 @@ export default class Library extends Component {
               }}
               onPress={() => {
                 Data.setCurNovel(novel.key).then(() => {
-                  console.log("done setCurNovel: " + novel.key);
                   return Data.removeCurChapter();
                 }).then(() => {
-                  console.log("done setCurChapter");
-                  this.props.navigation.goBack();
+                  //this.props.navigation.goBack();
+                  this.props.navigation.dispatch({
+                    type: 'goBackWithParams',
+                    params: {timestamp: new Date().getTime()},
+                  });
                 }).catch(e => {
-                  console.e(e);
+                  console.error(e);
                 })
 
               }}>{novel.name}</Text>

@@ -129,7 +129,7 @@ export default class Data {
         return key.match(novelKey);
       });
     }).then(keys => {
-      console.log("prepare to delete: " + JSON.stringify(keys));
+      //console.log("prepare to delete: " + JSON.stringify(keys));
       return AsyncStorage.multiRemove(keys);
     });
   }
@@ -145,7 +145,7 @@ export default class Data {
   }
 
   static getChapter(novelKey, idx) {
-    console.log("getChapter: " + (novelKey +"_"+idx));
+    //console.log("getChapter: " + (novelKey +"_"+idx));
     return AsyncStorage.getItem(novelKey+"_"+idx);
   }
 

@@ -33,8 +33,7 @@ export default class DashBoard extends Component {
 
     Data.getNovels().then(novels => {
       if (novels) {
-        console.log("novels:" + novels);
-        //console.log("novels:" + JSON.stringify(novels));
+        console.log("novels:" + JSON.stringify(novels));
         this.setState({
           book_count: novels.length,
         });
@@ -80,14 +79,18 @@ export default class DashBoard extends Component {
 
         <View style={styles.setting}>
           <Image source={require('./img/settings.png')} style={styles.settingIcon} />
-          <Text style={styles.settingText}>
+          <Text style={styles.settingText} onPress={() => {
+            this.props.navigation.navigate("Settings");
+          }}>
             Settings
           </Text>
         </View>
 
         <View style={styles.setting}>
           <Image source={require('./img/info.png')} style={styles.settingIcon} />
-          <Text style={styles.settingText}>
+          <Text style={styles.settingText} onPress={() => {
+            this.props.navigation.navigate("Help");
+          }}>
             Help
           </Text>
         </View>

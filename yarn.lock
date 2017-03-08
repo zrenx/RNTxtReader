@@ -2596,13 +2596,13 @@ mime-db@~1.23.0:
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.23.0.tgz#a31b4070adaea27d732ea333740a64d0ec9a6659"
 
-mime-types@2.1.11, mime-types@~2.1.7:
+mime-types@2.1.11:
   version "2.1.11"
   resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.11.tgz#c259c471bda808a85d6cd193b430a5fae4473b3c"
   dependencies:
     mime-db "~1.23.0"
 
-mime-types@^2.1.12, mime-types@~2.1.11, mime-types@~2.1.13, mime-types@~2.1.6, mime-types@~2.1.9:
+mime-types@^2.1.12, mime-types@~2.1.11, mime-types@~2.1.13, mime-types@~2.1.6, mime-types@~2.1.7, mime-types@~2.1.9:
   version "2.1.14"
   resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.14.tgz#f7ef7d97583fcaf3b7d282b6f8b5679dab1e94ee"
   dependencies:
@@ -3004,6 +3004,10 @@ react-devtools-core@^2.0.8:
     cross-env "^3.1.4"
     ws "^2.0.3"
 
+react-localization@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/react-localization/-/react-localization-0.0.12.tgz#1545295384af0714a0cfbd29c4bf5ac16169422a"
+
 react-native-dismiss-keyboard@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/react-native-dismiss-keyboard/-/react-native-dismiss-keyboard-1.0.0.tgz#32886242b3f2317e121f3aeb9b0a585e2b879b49"
@@ -3044,9 +3048,9 @@ react-native-tab-view@^0.0.56:
   version "0.0.56"
   resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-0.0.56.tgz#7417a1f6502deef49abf58ba76a1cde213abbbf1"
 
-react-native@0.43.0-rc.0:
-  version "0.43.0-rc.0"
-  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.43.0-rc.0.tgz#0eefefcda4e5546b69072fa9020c51e42294cb2e"
+react-native@0.43.0-rc.1:
+  version "0.43.0-rc.1"
+  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.43.0-rc.1.tgz#b72386d9ab7bc117cebb3538ee240425afb26b8d"
   dependencies:
     absolute-path "^0.0.0"
     art "^0.10.0"

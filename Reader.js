@@ -21,9 +21,7 @@ import {
   TouchableHighlight,
   FlatList,
 } from 'react-native';
-import { DocumentPickerUtil, DocumentPicker } from 'react-native-document-picker';
-import RNFS from 'react-native-fs';
-import FilePickerManager from 'react-native-file-picker';
+
 import Drawer from 'react-native-drawer';
 
 import ZrxDialog from './ZrxDialog';
@@ -31,6 +29,7 @@ import MoreTouchable from './MoreTouchable';
 import DashBoard from './DashBoard';
 import Data from './data';
 import { stringifyCyclic } from './Utils';
+import Settings from './Settings';
 
 export default class Reader extends Component {
 
@@ -41,11 +40,18 @@ export default class Reader extends Component {
 
   constructor(props) {
     super(props);
+    let timestamp = null;
     let novels = null;
     let curNovel = null;
     let curChapter = null;
     let curContent = null;
     let chapters = null;
+    let settings = {
+      fontSize: 16,
+      color: '#fff',
+      backgroundColor: '#000',
+    };
+
     this.titleAnim = new Animated.Value(0);
     this.renderCb = null;
 
@@ -56,12 +62,53 @@ export default class Reader extends Component {
       showChapterList: false,
       showChapter: true,
       drawerOpen: false,
+      settings: settings,
     };
+  }
+  componentWillMount() {
+    console.log('Reader componentWillMount');
+  }
+
+  componentWillReceiveProps(nextProps) {
+    console.log('Reader componentWillReceiveProps');
+    console.log("params: " + JSON.stringify(this.props.navigation));
+    console.log("nextProps: " + JSON.stringify(nextProps));
+
+    if (!this.props.navigation.state.params || nextProps.navigation.state.params.timestamp !== this.props.navigation.state.params.timestamp) {
+      //this._init();
+      this.refs.drawer.close();
+    }
+  }
+
+  /*shouldComponentUpdate(nextProps, nextState) {
+    console.log('Reader shouldComponentUpdate');
+    return true;
+  }*/
+
+  componentDidUpdate() {
+    console.log('Reader componentDidUpdate');
+    console.log("params: " + JSON.stringify(this.props.navigation));
+    console.log("state: " + JSON.stringify(this.state));
   }
 
   componentDidMount() {
     console.log('Reader componentDidMount');
-    //this.init();
+    console.log('fun: ' +JSON.stringify(this.props));
+    this.timestamp = new Date().getTime();
+    //this.props.onNavigationStateChange=(prev, cur) => {
+    //  consolog.log("onNavigationStateChange: " + JSON.stringify(prev));
+    //};
+    this._init();
+  }
+
+  _init() {
+    console.log("_init")
+    Settings.loadSettings().then(settings => {
+      if (settings) {
+        this.state.settings = settings;
+      }
+    });
+
     Data.getNovels().then(async (novels) => {
       //console.log(JSON.stringify(novels));
       if (!novels || novels.length == 0) {
@@ -74,11 +121,11 @@ export default class Reader extends Component {
         if (this.curNovel) {
           this.chapters = await Data.getChapters(this.curNovel);
           if (!this.curChapter) {
-            this.curChapter = this.chapters[0];
+            this.curChapter = this.curNovel + '_'+ 0;
           }
 
           Data.getChapter(this.curChapter).then(text => {
-            this.setState({loading: false, content: text});
+            this.setState({loading: false, content: text, title: this.chapters[this.curChapter.split('_')[2]]});
           })
 
         } else {
@@ -92,15 +139,27 @@ export default class Reader extends Component {
   }
 
   render() {
+    console.log("render settings: " + JSON.stringify(this.state.settings));
+    let scheme = {
+      backgroundColor: this.state.settings.backgroundColor,
+      color: this.state.settings.color,
+      fontSize: this.state.settings.fontSize,
+    };
+
     return (
       <Drawer
         ref='drawer'
         tapToClose={true}
         open={this.state.drawerOpen}
         openDrawerOffset={0.2}
+        onClose={() => {
+          //this.forceUpdate();
+          console.log('Drawer onClose');
+          this._init();
+        }}
         content={<DashBoard navigation={this.props.navigation} />}>
 
-        <View style={{flex:1, backgroundColor: 'black'}}>
+        <View style={{flex:1, backgroundColor: this.state.settings.backgroundColor}}>
         <ScrollView ref="scrollView" indicatorStyle="white"
           onScroll={(event) => {
             this.controlTitleAnim(event.nativeEvent.contentOffset.y);
@@ -135,7 +194,7 @@ export default class Reader extends Component {
                   this.refs.flatlist.scrollToIndex({animated: true, index:idx});
                 }, 100);
               }}>
-            <Text style={styles.content} >
+            <Text style={[styles.content, scheme]} >
               {this.state.content}
             </Text>
           </MoreTouchable>
@@ -271,7 +330,6 @@ const styles = StyleSheet.create({
     top: 9,
   },
   content: {
-    borderWidth: 5,
     color: '#fff',
     fontSize: 16,
     margin: 5,
