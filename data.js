@@ -84,7 +84,7 @@ export default class Data {
           //lines.forEach((line) => {
           for (let line of lines) {
             //console.log(lines[i]);
-            if (line.match("^\s*第.{1,4}章.*$")) {
+            if (line.match("^\s*第.{1,7}章.*$")) {
               console.log("chapter: " + line);
               title = line;
               chapters.push(title);
