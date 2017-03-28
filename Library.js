@@ -22,6 +22,7 @@ import {
 import Data from './data';
 import ZrxDialog from './ZrxDialog';
 
+//import { Toast } from 'native-base';
 import {SwipeRow} from 'react-native-swipe-list-view';
 import { NavigationActions, StackRouter } from 'react-navigation';
 
@@ -65,6 +66,7 @@ export default class Library extends Component {
         });
       }
     }).catch(error => {
+      //Toast.show({message: e});
       console.error(error);
     }); 
   }

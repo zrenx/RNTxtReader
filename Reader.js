@@ -243,13 +243,13 @@ export default class Reader extends Component {
             keyExtractor={(item, index) => index}
             getItemLayout={(item, index) => ({length: 40, offset: 40 * index, index})}
             renderItem={({item, index}) => {
-              let bg = this.curChapter.split('_')[2] == index ? {backgroundColor: '#eef'}: null;
+              let selected = this.curChapter.split('_')[2] == index ? {fontWeight: 'bold', textDecorationLine: 'underline'}: null;
               return (
                 <TouchableOpacity activeOpacity={0.5}  onPress={() => {
                   this.selectChapterIdx(index);
                   this.setState({showChapterList: false});
                 }}>
-                <Text style={[{height: 40, textAlignVertical: 'center'}, bg]}>{item}</Text>
+                <Text style={[{height: 40, textAlignVertical: 'center'}, selected]}>{item}</Text>
                 </TouchableOpacity>
                 );
             }}
